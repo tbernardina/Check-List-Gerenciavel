@@ -2,51 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 import pymysql
 from Conexao import conexao_db
-
-# Funções do banco de dados
-def verificar_credenciais(usuario, senha):
-    conexao = conexao_db()
-    with conexao.cursor() as cursor:
-
-        cursor.execute("""SELECT CARGO FROM PROJETOPYHTON.USUARIOS WHERE NOME = %s AND SENHA = %s""", (usuario, senha))
-        resultado = cursor.fetchone()
-    conexao.close()
-
-    return resultado["CARGO"] if resultado else None
-
-def carregar_tarefas():
-    conexao = conexao_db()
-    with conexao.cursor() as cursor:
-
-        cursor.execute("SELECT DESCRICAO, STATUS FROM PROJETOPYTHON.TAREFAS")
-        tarefas = cursor.fetchall()
-    conexao.close()
-
-    return tarefas
-
-def adicionar_tarefa_db(descricao):
-    conexao = conexao_db()
-    with conexao.cursor() as cursor:
-
-        cursor.execute("INSERT INTO PROJETOPYTHON.TAREFAS (DESCRICAO) VALUES (%s)", (descricao,))
-    conexao.commit()
-    conexao.close()
-
-def remover_tarefa_bd(id_tarefa):
-    conexao = conexao_db()
-    with conexao.cursor() as cursor:
-
-        cursor.execute("DELETE FROM PROJETOPYTHON.TAREFAS WHERE TAREFAS_ID = %s", (id_tarefa,))
-    conexao.commit()
-    conexao.close()
-
-def atualizar_status_tarefa(id_tarefa, status):
-    conexao = conexao_db()
-    with conexao.cursor() as cursor:
-
-        cursor.execute("UPDATE PROJETOPYTHON.TAREFAS SET STATUS = %s WHERE TAREFAS_ID = %s", (status, id_tarefa))
-    conexao.commit()
-    conexao.close()
+import FuncoesBanco as FB
 
 # Funções da interface
 def verificar_login():
@@ -54,7 +10,7 @@ def verificar_login():
     usuario = entrada_usuario.get()
     senha = entrada_senha.get()
 
-    nivel = verificar_credenciais(usuario, senha)
+    nivel = FB.verificar_credenciais(usuario, senha)
     if nivel:
         global nivel_acesso
         nivel_acesso = nivel
@@ -64,27 +20,27 @@ def verificar_login():
         messagebox.showerror("Erro de Login", "Usuário ou senha incorretos.")
 
 def adicionar_tarefa():
-    if nivel_acesso != "ADMINISTRADOR":
+    if nivel_acesso != "1":
         messagebox.showwarning("Permissão Negada", "Apenas supervisores podem adicionar tarefas.")
         return
 
     tarefa = entrada_tarefa.get()
     if tarefa:
-        adicionar_tarefa_db(tarefa)
+        FB.adicionar_tarefa_db(tarefa)
         carregar_lista_tarefas()
         entrada_tarefa.delete(0, tk.END)
     else:
         messagebox.showwarning("Aviso", "Digite uma tarefa antes de adicionar.")
 
 def remover_tarefa():
-    if nivel_acesso != "ADMINISTRADOR":
+    if nivel_acesso != "1":
         messagebox.showwarning("Permissão Negada", "Apenas supervisores podem remover tarefas.")
         return
 
     try:
         index_selecionado = lista_tarefas.curselection()[0]
         id_tarefa = lista_tarefas.get(index_selecionado).split(" - ")[0]
-        remover_tarefa_bd(id_tarefa)
+        FB.remover_tarefa_bd(id_tarefa)
         carregar_lista_tarefas()
     except IndexError:
         messagebox.showwarning("Aviso", "Selecione uma tarefa para remover.")
@@ -93,16 +49,16 @@ def marcar_concluida():
     try:
         index_selecionado = lista_tarefas.curselection()[0]
         id_tarefa = lista_tarefas.get(index_selecionado).split(" - ")[0]
-        atualizar_status_tarefa(id_tarefa, "Concluída")
+        FB.atualizar_status_tarefa(id_tarefa, "Concluída")
         carregar_lista_tarefas()
     except IndexError:
         messagebox.showwarning("Aviso", "Selecione uma tarefa para marcar como concluída.")
 
 def carregar_lista_tarefas():
     lista_tarefas.delete(0, tk.END)
-    tarefas = carregar_tarefas()
-    for id_tarefa, descricao, status in tarefas:
-        lista_tarefas.insert(tk.END, f"{id_tarefa} - {descricao} ({status})")
+    tarefas = FB.carregar_tarefas()
+    for tarefas in tarefas:
+        lista_tarefas.insert(tk.END, f"{tarefas['TAREFAS_ID']} - {tarefas['DESCRICAO']} ({tarefas['STATUS']})")
 
 # Interface Principal
 def abrir_interface_principal():
@@ -143,7 +99,7 @@ def abrir_interface_principal():
     botao_concluida.pack(side=tk.LEFT, padx=5)
 
     # Configurar permissões
-    if nivel_acesso == "FUNCIONARIO":
+    if nivel_acesso == "0":
         botao_adicionar.config(state=tk.DISABLED)
         botao_remover.config(state=tk.DISABLED)
 
