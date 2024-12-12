@@ -3,7 +3,7 @@ import pymysql.cursors
 
 def conexao_db():
     return pymysql.connect(
-        host="192.168.1.47",
+        host="192.168.1.44",
         user = "GerenciadorCheckList",
         password = "GerenciadorCheckList123",
         database = "projetopython",
