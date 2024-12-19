@@ -22,7 +22,7 @@ def executar_query(query, parametros=(), fetchone=False, fetchall=False):
 
 def verificar_informacao_usuario(usuario, senha, coluna):
     """
-    Retorna uma informação específica de um usuário (e.g., ADMINISTRADOR, SETOR).
+    Retorna uma informação específica de um usuário (e.g., CARGO, SETOR).
     """
     query = f"SELECT {coluna} FROM usuarios WHERE NOME = %s AND SENHA = %s"
     resultado = executar_query(query, (usuario, senha), fetchone=True)
@@ -38,22 +38,30 @@ def select_tarefas(id_tarefa):
     WHERE TAREFAS_ID = %s"""
     return executar_query(query, (id_tarefa,), fetchone=True)
 
-def carregar_tarefas(nivel_acesso, tarefa_status, usuario_id):
+def carregar_tarefas(nivel_acesso, setor_exec,tarefa_status, usuario_id):
     print(f"Este é o nivel de acesso: {nivel_acesso}, esse é o status selecionado: {tarefa_status} e esse é o id do usuário {usuario_id}")
 
-    if nivel_acesso == "0" and tarefa_status != "TODOS":
+    if nivel_acesso == 3 and tarefa_status != "TODOS":
         query = "SELECT * FROM tarefas WHERE STATUS = %s AND FUNCIONARIO_DESTINO = %s"
         return executar_query(query, (tarefa_status, usuario_id ), fetchall=True)
     
-    elif nivel_acesso == "0" and tarefa_status == "TODOS":
+    elif nivel_acesso == 3 and tarefa_status == "TODOS":
         query = "SELECT * FROM tarefas WHERE FUNCIONARIO_DESTINO = %s"
         return executar_query(query, (usuario_id), fetchall=True)
     
-    elif nivel_acesso == "1" and tarefa_status != "TODOS":
+    elif nivel_acesso == 1 and tarefa_status != "TODOS":
+        query = "SELECT * FROM tarefas WHERE SETOR = %s AND STATUS = %s"
+        return executar_query(query, (setor_exec, tarefa_status), fetchall=True)
+    
+    elif nivel_acesso == 1 and tarefa_status == "TODOS":
+        query = "SELECT * FROM tarefas WHERE SETOR = %s"
+        return executar_query(query, (setor_exec), fetchall=True)
+    
+    elif nivel_acesso == 2 and tarefa_status != "TODOS":
         query = "SELECT * FROM tarefas WHERE STATUS = %s"
         return executar_query(query, (tarefa_status), fetchall=True)
     
-    elif nivel_acesso == "1" and tarefa_status == "TODOS":
+    elif nivel_acesso == 2 and tarefa_status == "TODOS":
         query = "SELECT * FROM tarefas"
         return executar_query(query, fetchall=True)
 
@@ -66,7 +74,7 @@ def adicionar_tarefa_db(titulo, descricao, setor, id_funcionarios):
         for id_funcionario in id_funcionarios:
             query = "INSERT INTO tarefas (TITULO, DESCRICAO, SETOR, FUNCIONARIO_DESTINO) VALUES (%s, %s, %s, %s)"
             executar_query(query, (titulo, descricao, setor, id_funcionario))
-            
+
     else:  # Caso seja apenas um ID
         query = "INSERT INTO tarefas (TITULO, DESCRICAO, SETOR, FUNCIONARIO_DESTINO) VALUES (%s, %s, %s, %s)"
         executar_query(query, (titulo, descricao, setor, id_funcionarios))

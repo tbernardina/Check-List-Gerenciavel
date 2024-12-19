@@ -2,19 +2,21 @@ import tkinter as tk
 from tkinter import messagebox
 from Conexao import conexao_db
 import FuncoesBanco as FB
+import Notifications as NF
 
 # Configurações gerais de estilo
 ESTILOS = {
-    "janela": {"bg": "#FFF8C6"},
-    "texto": {"font": ("Arial", 12), "bg": "#FFF8C6", "fg": "#6D4C41"},
-    "titulo": {"font": ("Comic Sans MS", 18, "bold"), "bg": "#FFF8C6", "fg": "#6D4C41"},
+    "janela": {"bg": "#2A5D48"},
+    "texto": {"font": ("Sans-Serif Bold", 12, "bold"), "bg": "#2A5D48", "fg": "#C34E17"},
+    "titulo": {"font": ("Comic Sans MS", 18, "bold"), "bg": "#2A5D48", "fg": "#C34E17"},
     "texto_login": {"font": ("Arial", 12)},
-    "lista_tarefas": {"font": ("Arial", 12), "fg": "#6D4C41"},
+    "lista_tarefas": {"font": ("Arial", 12), "fg": "#37515F"},
 }
 
 class App:
     def __init__(self):
         self.caminhoIcone = "Check_List_LAC_Icone.ico"
+        self.timeout_notify = 10000
         self.id_usuario = None
         self.usuario = None
         self.nivel_acesso = None
@@ -47,10 +49,12 @@ class App:
         self.janela_login.mainloop()
 
     def verificar_login(self):
+
         usuario = self.entrada_usuario.get()
         senha = self.entrada_senha.get()
+        print(f"usuario: {usuario}, senha: {senha}")
 
-        nivel = FB.verificar_informacao_usuario(usuario, senha, "ADMINISTRADOR")
+        nivel = FB.verificar_informacao_usuario(usuario, senha, "CARGO")
         setor = FB.verificar_informacao_usuario(usuario, senha, "SETOR")
         id = FB.verificar_informacao_usuario(usuario, senha, "USER_ID") 
         if nivel:
@@ -106,7 +110,7 @@ class App:
         # Altere o ícone da janela principal
         self.janela_principal.iconbitmap(self.caminhoIcone)
 
-        self.criar_frame_titulo(self.janela_principal, "Bloco de Anotações")
+        self.criar_frame_titulo(self.janela_principal, "Afazeres")
 
         # Ordem em que os elementos aparecem na tela, frames utilizadas na interface principal
         frame_botoes_cabecalho = tk.Frame(self.janela_principal, **ESTILOS["janela"])
@@ -135,7 +139,7 @@ class App:
         # Criando os botões e verificando o estado com base no nível de acesso
         for texto, comando in botoes_cabecalho:
             estado = "normal"  # Estado padrão
-            if texto in ["Remover", "Adicionar"] and str(self.nivel_acesso) != "1":
+            if texto in ["Remover", "Adicionar"] and self.nivel_acesso != 1:
                 estado = "disabled"  # Desativa se o usuário não for administrador
             
             print(f"Botão: {texto}, Estado: {estado}")  # Debug para verificar o estado do botão
@@ -163,10 +167,19 @@ class App:
     def carregar_lista_tarefas(self):
         self.lista_tarefas.delete(0, tk.END)
         self.tarefa_status = self.status_selecionado.get()
-        tarefas = FB.carregar_tarefas(self.nivel_acesso, self.tarefa_status, self.id_usuario)
+        tarefas = FB.carregar_tarefas(self.nivel_acesso, self.setor_exec, self.tarefa_status, self.id_usuario)
+        
+        if self.nivel_acesso != 1:
+            # Verificar se há tarefas pendentes
+            tarefas_pendentes = [tarefa for tarefa in tarefas if tarefa["STATUS"] == "PENDENTE"]
+
+            # Notificar o usuário se houver tarefas pendentes
+            if tarefas_pendentes:
+                NF.enviar_notificacao(f"Você tem {len(tarefas_pendentes)} tarefas pendentes!")
+                self.janela_principal.after(self.timeout_notify, self.carregar_lista_tarefas)
         for tarefa in tarefas:
             self.lista_tarefas.insert(tk.END, f" ● {tarefa['TAREFAS_ID']} - {tarefa['TITULO']} ({tarefa['STATUS']})")
-
+    
     # Funções auxiliares
     def criar_janela(self, titulo, dimensao=None):
         janela = tk.Tk()
