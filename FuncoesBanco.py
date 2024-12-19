@@ -29,20 +29,47 @@ def verificar_informacao_usuario(usuario, senha, coluna):
     return resultado[coluna] if resultado else None
 
 def select_tarefas(id_tarefa):
-    query = "SELECT * FROM tarefas WHERE TAREFAS_ID = %s"
+    query = """select t.TAREFAS_ID, t.TITULO, t.DESCRICAO, t.STATUS, t.TAREFA_SOLUCAO, t.DATA_CONCLUSAO, 
+    s.NOME_SETOR, 
+    us.NOME as FUNCIONARIO_SOLUCAO_NOME, ud.NOME as FUNCIONARIO_DESTINO_NOME from tarefas t
+    left join setores s on t.SETOR = s.SETOR_ID 
+    left join usuarios us on t.FUNCIONARIO_SOLUCAO = us.USER_ID 
+    left join usuarios ud on t.FUNCIONARIO_DESTINO = ud.USER_ID
+    WHERE TAREFAS_ID = %s"""
     return executar_query(query, (id_tarefa,), fetchone=True)
 
-def carregar_tarefas(nivel_acesso, setor_destino, tarefa_status):
+def carregar_tarefas(nivel_acesso, tarefa_status, usuario_id):
+    print(f"Este é o nivel de acesso: {nivel_acesso}, esse é o status selecionado: {tarefa_status} e esse é o id do usuário {usuario_id}")
+
     if nivel_acesso == "0" and tarefa_status != "TODOS":
-        query = "SELECT * FROM tarefas WHERE SETOR_ID = %s AND STATUS = %s"
-        return executar_query(query, (setor_destino, tarefa_status), fetchall=True)
-    else:
+        query = "SELECT * FROM tarefas WHERE STATUS = %s AND FUNCIONARIO_DESTINO = %s"
+        return executar_query(query, (tarefa_status, usuario_id ), fetchall=True)
+    
+    elif nivel_acesso == "0" and tarefa_status == "TODOS":
+        query = "SELECT * FROM tarefas WHERE FUNCIONARIO_DESTINO = %s"
+        return executar_query(query, (usuario_id), fetchall=True)
+    
+    elif nivel_acesso == "1" and tarefa_status != "TODOS":
+        query = "SELECT * FROM tarefas WHERE STATUS = %s"
+        return executar_query(query, (tarefa_status), fetchall=True)
+    
+    elif nivel_acesso == "1" and tarefa_status == "TODOS":
         query = "SELECT * FROM tarefas"
         return executar_query(query, fetchall=True)
 
-def adicionar_tarefa_db(titulo, descricao, setor, id_funcionario):
-    query = "INSERT INTO tarefas (TITULO, DESCRICAO, SETOR, FUNCIONARIO_DESTINO) VALUES (%s, %s, %s, %s)"
-    executar_query(query, (titulo, descricao, setor, id_funcionario))
+def adicionar_tarefa_db(titulo, descricao, setor, id_funcionarios):
+    """
+    Adiciona uma ou mais tarefas no banco de dados.
+    Se 'id_funcionarios' for uma lista, adiciona uma tarefa para cada funcionário.
+    """
+    if isinstance(id_funcionarios, list):  # Caso seja uma lista de IDs (quando "TODOS" for selecionado)
+        for id_funcionario in id_funcionarios:
+            query = "INSERT INTO tarefas (TITULO, DESCRICAO, SETOR, FUNCIONARIO_DESTINO) VALUES (%s, %s, %s, %s)"
+            executar_query(query, (titulo, descricao, setor, id_funcionario))
+            
+    else:  # Caso seja apenas um ID
+        query = "INSERT INTO tarefas (TITULO, DESCRICAO, SETOR, FUNCIONARIO_DESTINO) VALUES (%s, %s, %s, %s)"
+        executar_query(query, (titulo, descricao, setor, id_funcionarios))
 
 def remover_tarefa_bd(id_tarefa):
     query = "DELETE FROM tarefas WHERE TAREFAS_ID = %s"
@@ -74,7 +101,7 @@ def carregar_setores():
     return [(resultado["SETOR_ID"], resultado["NOME_SETOR"]) for resultado in resultados]
 
 def carregar_funcionarios_por_setor(setor):
-    query = "SELECT NOME FROM usuarios WHERE SETOR = %s"
+    query = "SELECT USER_ID ,NOME FROM usuarios WHERE SETOR = %s"
     resultados = executar_query(query, (setor), fetchall=True)
     return [resultado["NOME"] for resultado in resultados]
 
@@ -85,3 +112,13 @@ def buscar_id_funcionario(nome_funcionario):
     query = "SELECT USER_ID FROM usuarios WHERE NOME = %s"
     resultado = executar_query(query, (nome_funcionario,), fetchone=True)
     return resultado["USER_ID"] if resultado else None
+
+def carregar_funcionarios_por_id(setor):
+    """
+    Carrega os IDs dos funcionários vinculados ao setor selecionado.
+    """
+    query = "SELECT USER_ID FROM usuarios WHERE SETOR = %s"
+    print(f"Query: {query} | Parâmetro: {setor}")  # Debug
+    resultados = executar_query(query, (setor,), fetchall=True)
+    print(f"Resultados da Query: {resultados}")  # Debug
+    return [resultado["USER_ID"] for resultado in resultados] if resultados else []
