@@ -108,6 +108,20 @@ def carregar_setores():
     resultados = executar_query(query, fetchall=True)
     return [(resultado["SETOR_ID"], resultado["NOME_SETOR"]) for resultado in resultados]
 
+def carregar_cargos():
+    """
+    Busca os cargos existentes no banco de dados.
+    """
+    query = "SELECT CARGOS_ID, NOME_CARGO FROM cargos"
+    return executar_query(query, fetchall=True)
+
+def criar_usuario(nome, senha, cargo_id, setor_id):
+    query = """
+        INSERT INTO usuarios (NOME, SENHA, CARGO, SETOR)
+        VALUES (%s, %s, %s, %s)
+    """
+    executar_query(query, (nome, senha, cargo_id, setor_id))
+
 def carregar_funcionarios_por_setor(setor):
     query = "SELECT USER_ID ,NOME FROM usuarios WHERE SETOR = %s"
     resultados = executar_query(query, (setor), fetchall=True)

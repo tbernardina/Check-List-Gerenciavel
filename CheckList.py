@@ -139,7 +139,7 @@ class App:
         # Criando os botões e verificando o estado com base no nível de acesso
         for texto, comando in botoes_cabecalho:
             estado = "normal"  # Estado padrão
-            if texto in ["Remover", "Adicionar"] and self.nivel_acesso != 1:
+            if texto in ["Remover", "Adicionar", "Criar Usuário"] and self.nivel_acesso != 1:
                 estado = "disabled"  # Desativa se o usuário não for administrador
             
             print(f"Botão: {texto}, Estado: {estado}")  # Debug para verificar o estado do botão
@@ -259,7 +259,6 @@ class App:
         # Opção de menu com nomes de setores
         setores_nomes = [setor[1] for setor in setores]
         self.setor_selecionado = tk.StringVar(value=setores_nomes[0])
-        self.setor_selecionado = tk.StringVar()
         self.setor_selecionado.set("Selecione um setor")
         setor_menu = tk.OptionMenu(popup_conteudo, self.setor_selecionado, *setores_nomes, command=self.atualizar_funcionarios)
         setor_menu.grid(row=2, column=1, pady=5)
@@ -271,6 +270,43 @@ class App:
         self.funcionarios_menu = tk.OptionMenu(popup_conteudo, self.funcionario_selecionado, "")
         self.funcionarios_menu.grid(row=3, column=1, pady=5)
   
+    def criar_usuario(self):
+        # Criar o popup
+        popup, popup_conteudo = self.criar_popup("Criar Novo Usuário", lambda: self.salvar_usuario(campo_nome, campo_senha, cargos_dict[cargo_selecionado.get()], setores_dict[setor_selecionado.get()], popup))
+
+        # Campo para nome do usuário
+        self.criar_rotulo(popup_conteudo, "Nome do Usuário:", 0, 0, **ESTILOS["texto"])
+        campo_nome = tk.Entry(popup_conteudo, width=40)
+        campo_nome.grid(row=0, column=1, pady=5)
+
+        # Campo para senha do usuário
+        self.criar_rotulo(popup_conteudo, "Senha:", 1, 0, **ESTILOS["texto"])
+        campo_senha = tk.Entry(popup_conteudo, show="*", width=40)
+        campo_senha.grid(row=1, column=1, pady=5)
+
+        # Dropdown para seleção de CARGO
+        self.criar_rotulo(popup_conteudo, "Cargo:", 2, 0, **ESTILOS["texto"])
+        cargos = FB.carregar_cargos()
+        print("Cargos retornados do banco:", cargos)
+
+
+        cargos_dict = {cargo['NOME_CARGO']: cargo['CARGOS_ID'] for cargo in cargos}
+        cargos_nomes = list(cargos_dict.keys())
+        cargo_selecionado = tk.StringVar(value=cargos_nomes[0])
+        tk.OptionMenu(popup_conteudo, cargo_selecionado, *cargos_nomes).grid(row=2, column=1, pady=5)
+
+       # Dropdown para selecionar o setor
+        self.criar_rotulo(popup_conteudo, "Setor:", 3, 0, **ESTILOS["texto"])
+        setores = FB.carregar_setores()  # Função que retorna uma lista de setores do banco
+        setores_dict = {setor[1]: setor[0] for setor in setores}  # mapeando nome para id
+
+        # Opção de menu com nomes de setores
+        setores_nomes = [setor[1] for setor in setores]
+        setor_selecionado = tk.StringVar(value=setores_nomes[0])
+        setor_selecionado.set("Selecione um setor")
+        setor_menu = tk.OptionMenu(popup_conteudo, setor_selecionado, *setores_nomes)
+        setor_menu.grid(row=3, column=1, pady=5)
+
     def marcar_concluida(self):
         try:
             # Obtemos o ID da tarefa selecionada
@@ -311,6 +347,23 @@ class App:
 
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao salvar conclusão da tarefa: {e}")
+    
+    def salvar_usuario(self, campo_nome, campo_senha, cargo_id, setor_id, popup):
+        nome = campo_nome.get().strip()
+        senha = campo_senha.get().strip()
+        print(f"Nome: {nome}, Senha: {senha}, Cargo ID: {cargo_id}, Setor ID: {setor_id}")
+        # Validação
+        if not nome or not senha:
+            messagebox.showwarning("Campos Obrigatórios", "Por favor, preencha todos os campos.")
+            return
+
+        try:
+            # Lógica para salvar no banco de dados
+            FB.criar_usuario(nome, senha, cargo_id, setor_id)
+            messagebox.showinfo("Sucesso", f"Usuário '{nome}' criado com sucesso!")
+            popup.destroy()
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao criar usuário: {e}")
 
     def atualizar_funcionarios(self, setor_id=None):
         """
