@@ -3,20 +3,10 @@ from tkinter import messagebox
 from Conexao import conexao_db
 import FuncoesBanco as FB
 import Notifications as NF
-
-# Configurações gerais de estilo
-ESTILOS = {
-    "janela": {"bg": "#2A5D48"},
-    "texto": {"font": ("Sans-Serif Bold", 12, "bold"), "bg": "#2A5D48", "fg": "#C34E17"},
-    "titulo": {"font": ("Comic Sans MS", 18, "bold"), "bg": "#2A5D48", "fg": "#C34E17"},
-    "texto_login": {"font": ("Arial", 12)},
-    "lista_tarefas": {"font": ("Arial", 12), "fg": "#37515F"},
-}
+from config import caminhoIcone, timeout_notify, ESTILOS
 
 class App:
     def __init__(self):
-        self.caminhoIcone = "Check_List_LAC_Icone.ico"
-        self.timeout_notify = 10000
         self.id_usuario = None
         self.usuario = None
         self.nivel_acesso = None
@@ -30,7 +20,7 @@ class App:
         self.janela_login = self.criar_janela("Login")
 
         # Icone janela de login
-        self.janela_login.iconbitmap(self.caminhoIcone)
+        self.janela_login.iconbitmap(caminhoIcone)
 
         frame_login = tk.Frame(self.janela_login, padx=20, pady=20)
         frame_login.pack()
@@ -108,7 +98,7 @@ class App:
         self.janela_principal = self.criar_janela("Gerenciador de Checklists", "400x500")
 
         # Altere o ícone da janela principal
-        self.janela_principal.iconbitmap(self.caminhoIcone)
+        self.janela_principal.iconbitmap(caminhoIcone)
 
         self.criar_frame_titulo(self.janela_principal, "Afazeres")
 
@@ -130,6 +120,7 @@ class App:
             ("Remover", self.remover_tarefa),
             ("Marcar como Concluída", self.marcar_concluida),
             ("Adicionar", self.adicionar_tarefa),
+            ("Criar Usuário", self.criar_usuario),
         ]
 
         botoes_rodape =[
@@ -176,7 +167,7 @@ class App:
             # Notificar o usuário se houver tarefas pendentes
             if tarefas_pendentes:
                 NF.enviar_notificacao(f"Você tem {len(tarefas_pendentes)} tarefas pendentes!")
-                self.janela_principal.after(self.timeout_notify, self.carregar_lista_tarefas)
+                self.janela_principal.after(timeout_notify, self.carregar_lista_tarefas)
         for tarefa in tarefas:
             self.lista_tarefas.insert(tk.END, f" ● {tarefa['TAREFAS_ID']} - {tarefa['TITULO']} ({tarefa['STATUS']})")
     
@@ -184,7 +175,7 @@ class App:
     def criar_janela(self, titulo, dimensao=None):
         janela = tk.Tk()
         janela.title(titulo)
-        janela.iconbitmap(self.caminhoIcone)
+        janela.iconbitmap(caminhoIcone)
 
         janela.configure(**ESTILOS["janela"])
         if dimensao:
@@ -197,7 +188,7 @@ class App:
     def criar_popup(self, titulo, comando_salvar):
         self.popup = tk.Toplevel()
         self.popup.title(titulo)
-        self.popup.iconbitmap(self.caminhoIcone)
+        self.popup.iconbitmap(caminhoIcone)
         self.popup.configure(**ESTILOS["janela"])
         self.popup.transient(self.janela_principal)
         self.popup.grab_set()

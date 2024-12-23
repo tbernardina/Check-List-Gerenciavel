@@ -1,12 +1,13 @@
 import pymysql
 import pymysql.cursors
+import config as cfg
 
 def conexao_db():
     return pymysql.connect(
-        host="192.168.1.44",
-        user = "GerenciadorCheckList",
-        password = "GerenciadorCheckList123",
-        database = "projetopython",
+        host= cfg.server_ip,
+        user = cfg.user,
+        password = cfg.password,
+        database = cfg.database,
         charset = "utf8mb4",
         cursorclass = pymysql.cursors.DictCursor 
 )

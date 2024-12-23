@@ -5,5 +5,5 @@ def enviar_notificacao(mensagem):
         title="Tarefa Pendente",
         message=mensagem,
         app_name="Gerenciador de Tarefas",
-        timeout=60  # Tempo em segundos para a notificação desaparecer
+        timeout=5  # Tempo em segundos para a notificação desaparecer
     )
