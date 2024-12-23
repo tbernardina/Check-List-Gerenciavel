@@ -178,4 +178,4 @@ Os estilos podem ser modificados diretamente no `config.py` na seção `ESTILOS`
 Contribuições são bem-vindas! Sinta-se à vontade para criar um fork do repositório e enviar pull requests.
 
 ## Licença
-Este projeto é propriedade de Thiago Reis Dalla Bernardina e está licenciado.
+Este projeto é propriedade de Thiago Reis Dalla Bernardina e está licenciado sob a [Apache License 2.0](LICENSE). Veja o arquivo `LICENSE` para mais detalhes.
