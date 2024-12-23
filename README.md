@@ -17,6 +17,7 @@ O **Gerenciador de Tarefas LACSM** é uma aplicação desenvolvida em Python com
 ### Estrutura do banco de dados
 
 #### Tabela de usuários
+```sql 
 CREATE TABLE `usuarios` (
   `USER_ID` int NOT NULL AUTO_INCREMENT,
   `NOME` varchar(35) DEFAULT NULL,
@@ -30,8 +31,10 @@ CREATE TABLE `usuarios` (
   CONSTRAINT `fk_cargo` FOREIGN KEY (`CARGO`) REFERENCES `cargos` (`CARGOS_ID`),
   CONSTRAINT `FK_SETOR` FOREIGN KEY (`SETOR`) REFERENCES `setores` (`SETOR_ID`)
 );
+```
 
 #### Tabela de tarefas
+```sql
 CREATE TABLE `tarefas` (
   `TAREFAS_ID` int NOT NULL AUTO_INCREMENT,
   `TITULO` varchar(30) DEFAULT NULL,
@@ -47,20 +50,25 @@ CREATE TABLE `tarefas` (
   CONSTRAINT `FK_FUNCIONARIO` FOREIGN KEY (`FUNCIONARIO_DESTINO`) REFERENCES `usuarios` (`USER_ID`),
   CONSTRAINT `FK_USER` FOREIGN KEY (`FUNCIONARIO_DESTINO`) REFERENCES `usuarios` (`USER_ID`)
 );
+```
 
 #### Tabela de setores
+```sql
 CREATE TABLE `setores` (
   `SETOR_ID` int NOT NULL AUTO_INCREMENT,
   `NOME_SETOR` varchar(50) NOT NULL,
   PRIMARY KEY (`SETOR_ID`)
 );
+```
 
 #### Tabela de cargos
+```sql
 CREATE TABLE `cargos` (
   `CARGOS_ID` int NOT NULL AUTO_INCREMENT,
   `NOME_CARGO` varchar(30) NOT NULL,
   PRIMARY KEY (`CARGOS_ID`)
 );
+```
 
 ### Principais Arquivos
 - **`CheckList.py`**: Arquivo principal que inicializa a aplicação e gerencia a interface gráfica.
