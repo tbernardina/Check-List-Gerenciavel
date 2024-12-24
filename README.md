@@ -1,7 +1,6 @@
-# Gerenciador de Tarefas LACSM
-
+# Gerenciador de Tarefas
 ## Descrição do Projeto
-O **Gerenciador de Tarefas LACSM** é uma aplicação desenvolvida em Python com interface gráfica usando Tkinter. O objetivo é facilitar a gestão de tarefas em um ambiente corporativo, permitindo a criação, remoção e marcação de tarefas como concluídas. A aplicação conta com um sistema de login e níveis de acesso para diferentes cargos, além de configurações externas que podem ser ajustadas facilmente sem recompilar o código.
+O **Gerenciador de Tarefas** é uma aplicação desenvolvida em Python com interface gráfica usando Tkinter. O objetivo é facilitar a gestão de tarefas em um ambiente corporativo, permitindo a criação, remoção e marcação de tarefas como concluídas. A aplicação conta com um sistema de login e níveis de acesso para diferentes cargos, além de configurações externas que podem ser ajustadas facilmente sem recompilar o código.
 
 ## Funcionalidades
 - **Login de Usuários**: Sistema de login com níveis de acesso (Administrador, Supervisor e Usuário).
@@ -76,7 +75,7 @@ CREATE TABLE `cargos` (
 - **`FuncoesBanco.py`**: Contém as funções para manipulação de dados no banco.
 - **`Notifications.py`**: Gerencia as notificações locais usando a biblioteca Plyer.
 - **`config.py`**: Arquivo de configuração com estilos e outras configurações.
-- **`Check_List_LACSM_Icone.ico`**: Ícone do aplicativo.
+- **`Check_List_Icone.ico`**: Ícone do aplicativo.
 
 ### Estrutura do Banco de Dados
 - **Tabelas Principais**:
@@ -113,7 +112,7 @@ Para compilar o aplicativo em um executável utilizando PyInstaller:
 
 2. Execute o comando para criar o executável no modo **`onedir`**:
    ```bash
-   pyinstaller --onedir --icon=Check_List_LACSM_Icone.ico CheckList.py
+   pyinstaller --onedir --icon=Check_List_Icone.ico CheckList.py
    ```
 
 ### Configurar o Instalador
@@ -121,7 +120,7 @@ Para compilar o aplicativo em um executável utilizando PyInstaller:
 2. Adicione os seguintes arquivos no instalador:
    - `CheckList.exe`
    - Todos os arquivos `.py` (como arquivos externos).
-   - `config.py` e `Check_List_LACSM_Icone.ico`.
+   - `config.py` e `Check_List_Icone.ico`.
 
 Exemplo de entrada no arquivo `.iss` do Inno Setup:
 ```ini
@@ -129,7 +128,7 @@ Exemplo de entrada no arquivo `.iss` do Inno Setup:
 Source: "C:\caminho\para\CheckList.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\caminho\para\*.py"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\caminho\para\config.py"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\caminho\para\Check_List_LACSM_Icone.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\caminho\para\Check_List_Icone.ico"; DestDir: "{app}"; Flags: ignoreversion
 ```
 
 ## Configurações Externas
@@ -149,7 +148,7 @@ ESTILOS = {
 timeout_notify = 10000
 
 # Variavel para definição do icone do aplicativo
-caminhoIcone = "Check_List_LACSM_Icone.ico"
+caminhoIcone = "Check_List_Icone.ico"
 ```
 
 ## Uso do Aplicativo
