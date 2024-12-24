@@ -157,8 +157,8 @@ caminhoIcone = "Check_List_Icone.ico"
 1. Abra o aplicativo e realize login com suas credenciais.
 2. Dependendo do seu cargo, acesse as funcionalidades:
    - Administradores: Criar, remover e editar tarefas.
-   - Supervisores: Visualizar e concluir tarefas.
-   - Usuários: Visualizar tarefas atribuídas.
+   - Supervisores: Visualizar e criar tarefas de um setor especifico.
+   - Usuários: Visualizar e concluir tarefas atribuídas.
 3. Notificações serão exibidas para tarefas pendentes.
 
 ## Manutenção
