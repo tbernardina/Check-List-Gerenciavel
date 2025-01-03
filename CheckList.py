@@ -22,6 +22,7 @@ class App:
     def __init__(self):
         self.id_usuario = None
         self.usuario = None
+        self.senha = None
         self.nivel_acesso = None
         self.setor_exec = None
         self.tarefa_status = "TODOS"
@@ -60,8 +61,10 @@ class App:
         nivel = FB.verificar_informacao_usuario(usuario, senha, "CARGO")
         setor = FB.verificar_informacao_usuario(usuario, senha, "SETOR")
         id = FB.verificar_informacao_usuario(usuario, senha, "USER_ID") 
+        senha_usuario = FB.verificar_informacao_usuario(usuario, senha, "SENHA")
         if nivel:
             self.usuario = usuario
+            self.senha = senha_usuario
             self.nivel_acesso = nivel
             self.setor_exec = setor
             self.id_usuario = id
@@ -137,13 +140,14 @@ class App:
         ]
 
         botoes_rodape =[
-            ("Atualizar", self.carregar_lista_tarefas)
+            ("Atualizar", self.carregar_lista_tarefas),
+            ("Alterar minha senha", self.alterar_senha_usuario)
         ]
 
         # Criando os botões e verificando o estado com base no nível de acesso
         for texto, comando in botoes_cabecalho:
             estado = "normal"  # Estado padrão
-            if texto in ["Remover", "Adicionar", "Criar Usuário"] and self.nivel_acesso != 1:
+            if texto in ["Remover", "Adicionar", "Criar Usuário"] and self.nivel_acesso == 3:
                 estado = "disabled"  # Desativa se o usuário não for administrador
             
             print(f"Botão: {texto}, Estado: {estado}")  # Debug para verificar o estado do botão
@@ -274,6 +278,21 @@ class App:
         self.funcionarios_menu = tk.OptionMenu(popup_conteudo, self.funcionario_selecionado, "")
         self.funcionarios_menu.grid(row=3, column=1, pady=5)
   
+    def alterar_senha_usuario(self):
+        popup, popup_conteudo = self.criar_popup("Alterar Minha Senha", lambda: self.salvar_senha(senha_antiga, senha_nova, confirmar_senha_nova, popup))
+
+        self.criar_rotulo(popup_conteudo, "Senha Antiga:", 0,0,**ESTILOS["texto"])
+        senha_antiga = tk.Entry(popup_conteudo, width=40)
+        senha_antiga.grid(row=0, column=1, pady=5)
+
+        self.criar_rotulo(popup_conteudo, "Senha Nova:",1,0,**ESTILOS["texto"])
+        senha_nova = tk.Entry(popup_conteudo, width=40, show="*")
+        senha_nova.grid(row=1, column=1, pady=5)
+
+        self.criar_rotulo(popup_conteudo, "Confirmar Senha:",2,0,**ESTILOS["texto"])
+        confirmar_senha_nova = tk.Entry(popup_conteudo, width=40, show="*")
+        confirmar_senha_nova.grid(row=2, column=1, pady=5)
+
     def criar_usuario(self):
         # Criar o popup
         popup, popup_conteudo = self.criar_popup("Criar Novo Usuário", lambda: self.salvar_usuario(campo_nome, campo_senha, cargos_dict[cargo_selecionado.get()], setores_dict[setor_selecionado.get()], popup))
@@ -369,6 +388,20 @@ class App:
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao criar usuário: {e}")
 
+    def salvar_senha(self, senha_antiga, senha_nova, confirmar_senha_nova, popup):
+        s_antiga = senha_antiga.get().strip()
+        s_nova = senha_nova.get().strip()
+        c_s_nova = confirmar_senha_nova.get().strip()
+
+        if s_antiga != self.senha:
+            messagebox.showerror("Erro", "A sua senha antiga está incorreta.")
+        elif s_nova != c_s_nova:
+            messagebox.showinfo("Problemas na alteração de senha", "As senhas não estão iguais")
+        else:
+            FB.alterar_senha(self.id_usuario, s_nova)
+            messagebox.showinfo("Sucesso", "Sua senha foi alterada com sucesso.")
+            popup.destroy()
+        
     def atualizar_funcionarios(self, setor_id=None):
         """
         Atualiza a lista de funcionários vinculados ao setor selecionado.

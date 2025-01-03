@@ -13,10 +13,10 @@
 # limitations under the License.
 
 # Variaveis de configuração de conexão com o servidor
-server_ip = "192.168.1.44"
+server_ip = "192.168.1.76"
 user = "GerenciadorCheckList"
-password = "GerenciadorCheckList123"
-database = "projetopython"
+password = "Y|tjZm%rTHM5@!NUsR5N*"
+database = "LACSM"
 
 # Variavel caminho para a imagem de icone do app
 caminhoIcone = "Check_List_LACSM_Icone.ico"
