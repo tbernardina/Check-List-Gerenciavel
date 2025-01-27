@@ -143,7 +143,7 @@ class App:
         # Criando os botões e verificando o estado com base no nível de acesso
         for texto, comando in botoes_cabecalho:
             estado = "normal"  # Estado padrão
-            if texto in ["Remover", "Adicionar", "Criar Usuário"] and self.nivel_acesso != 1:
+            if texto in ["Remover", "Adicionar", "Criar Usuário"] and self.nivel_acesso == 0:
                 estado = "disabled"  # Desativa se o usuário não for administrador
             
             print(f"Botão: {texto}, Estado: {estado}")  # Debug para verificar o estado do botão
@@ -178,7 +178,7 @@ class App:
             tarefas_pendentes = [tarefa for tarefa in tarefas if tarefa["STATUS"] == "PENDENTE"]
 
             # Notificar o usuário se houver tarefas pendentes
-            if tarefas_pendentes:
+            if tarefas_pendentes and self.nivel_acesso == 3:
                 NF.enviar_notificacao(f"Você tem {len(tarefas_pendentes)} tarefas pendentes!")
                 self.janela_principal.after(timeout_notify, self.carregar_lista_tarefas)
         for tarefa in tarefas:
@@ -300,7 +300,7 @@ class App:
         tk.OptionMenu(popup_conteudo, cargo_selecionado, *cargos_nomes).grid(row=2, column=1, pady=5)
 
        # Dropdown para selecionar o setor
-        self.criar_rotulo(popup_conteudo, "Setor:", 3, 0, **ESTILOS["texto"])
+        self.criar_rotulo(popup_conteudo, "Grupo de permissões:", 3, 0, **ESTILOS["texto"])
         setores = FB.carregar_setores()  # Função que retorna uma lista de setores do banco
         setores_dict = {setor[1]: setor[0] for setor in setores}  # mapeando nome para id
 

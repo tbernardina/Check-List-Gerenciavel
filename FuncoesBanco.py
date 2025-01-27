@@ -62,19 +62,29 @@ def carregar_tarefas(nivel_acesso, setor_exec,tarefa_status, usuario_id):
         query = "SELECT * FROM tarefas WHERE FUNCIONARIO_DESTINO = %s"
         return executar_query(query, (usuario_id), fetchall=True)
     
-    elif nivel_acesso == 1 and tarefa_status != "TODOS":
-        query = "SELECT * FROM tarefas WHERE SETOR = %s AND STATUS = %s"
-        return executar_query(query, (setor_exec, tarefa_status), fetchall=True)
-    
-    elif nivel_acesso == 1 and tarefa_status == "TODOS":
-        query = "SELECT * FROM tarefas WHERE SETOR = %s"
-        return executar_query(query, (setor_exec), fetchall=True)
-    
     elif nivel_acesso == 2 and tarefa_status != "TODOS":
+        query = """
+        SELECT t.* FROM tarefas t
+        JOIN grupo_permissoes gp ON t.SETOR = gp.SETOR_ID
+        JOIN usuarios u ON u.GRUPO_ID = gp.GRUPO_ID
+        WHERE u.USER_ID = %s AND t.STATUS = %s;
+        """
+        return executar_query(query, (usuario_id, tarefa_status), fetchall=True)
+    
+    elif nivel_acesso == 2 and tarefa_status == "TODOS":
+        query = """
+        SELECT t.* FROM tarefas t
+        JOIN grupo_permissoes gp ON t.SETOR = gp.SETOR_ID
+        JOIN usuarios u ON u.GRUPO_ID = gp.GRUPO_ID
+        WHERE u.USER_ID = %s;
+        """
+        return executar_query(query, (usuario_id), fetchall=True)
+    
+    elif nivel_acesso == 1 and tarefa_status != "TODOS":
         query = "SELECT * FROM tarefas WHERE STATUS = %s"
         return executar_query(query, (tarefa_status), fetchall=True)
     
-    elif nivel_acesso == 2 and tarefa_status == "TODOS":
+    elif nivel_acesso == 1 and tarefa_status == "TODOS":
         query = "SELECT * FROM tarefas"
         return executar_query(query, fetchall=True)
 
