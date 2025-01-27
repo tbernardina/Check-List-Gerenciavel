@@ -300,7 +300,7 @@ class App:
         tk.OptionMenu(popup_conteudo, cargo_selecionado, *cargos_nomes).grid(row=2, column=1, pady=5)
 
        # Dropdown para selecionar o setor
-        self.criar_rotulo(popup_conteudo, "Grupo de permissões:", 3, 0, **ESTILOS["texto"])
+        self.criar_rotulo(popup_conteudo, "Setor:", 3, 0, **ESTILOS["texto"])
         setores = FB.carregar_setores()  # Função que retorna uma lista de setores do banco
         setores_dict = {setor[1]: setor[0] for setor in setores}  # mapeando nome para id
 
