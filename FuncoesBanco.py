@@ -146,7 +146,12 @@ def criar_usuario(nome, senha, cargo_id, setor_id):
     executar_query(query, (nome, senha, cargo_id, setor_id))
 
 def carregar_funcionarios_por_setor(setor):
-    query = "SELECT USER_ID ,NOME FROM usuarios WHERE SETOR = %s"
+    query = """
+        SELECT u.USER_ID, u.NOME
+        FROM usuario_setores us
+        JOIN usuarios u ON us.USER_ID = u.USER_ID
+        WHERE us.SETOR_ID = %s
+        """
     resultados = executar_query(query, (setor), fetchall=True)
     return [resultado["NOME"] for resultado in resultados]
 
