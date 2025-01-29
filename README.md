@@ -114,6 +114,9 @@ CREATE TABLE usuario_setores (
   - `tarefas`: Contém as tarefas e seus status.
   - `setores`: Lista os setores da organização.
   - `cargos`: Define os níveis de acesso (Administrador, Supervisor, Usuário).
+  - `grupos`: Nomeia grupos de visualização dos supervisores.
+  - `grupo_permissoes`: Define quais setores o usuário supervisor terá acesso para visualização.
+  - `usuario_setores`: Tabela utilizada para vincular um usuário para mais de um setor.
 
 ## Requisitos
 
