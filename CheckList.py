@@ -182,7 +182,7 @@ class App:
             tarefas_pendentes = [tarefa for tarefa in tarefas if tarefa["STATUS"] == "PENDENTE"]
 
             # Notificar o usuário se houver tarefas pendentes
-            if tarefas_pendentes:
+            if tarefas_pendentes and self.nivel_acesso == 3:
                 NF.enviar_notificacao(f"Você tem {len(tarefas_pendentes)} tarefas pendentes!")
                 self.janela_principal.after(timeout_notify, self.carregar_lista_tarefas)
         for tarefa in tarefas:
