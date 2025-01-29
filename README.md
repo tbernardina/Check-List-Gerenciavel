@@ -70,6 +70,35 @@ CREATE TABLE `cargos` (
 );
 ```
 
+#### Tabela de grupos
+```sql
+CREATE TABLE grupo (
+    'GRUPO_ID' INT AUTO_INCREMENT PRIMARY KEY,
+    'NOME_GRUPO' VARCHAR(100) NOT NULL UNIQUE
+);
+```
+
+#### Tabela de permissões de visão das tarefas
+```sql
+CREATE TABLE grupo_permissoes (
+    GRUPO_ID INT NOT NULL,
+    SETOR_ID INT NOT NULL,
+    PRIMARY KEY (GRUPO_ID, SETOR_ID),
+    FOREIGN KEY (GRUPO_ID) REFERENCES grupo(GRUPO_ID) ON DELETE CASCADE,
+    FOREIGN KEY (SETOR_ID) REFERENCES setores(SETOR_ID) ON DELETE CASCADE
+);
+```
+
+#### Tabela de relacionamento de usuário para setor
+```sql
+CREATE TABLE usuario_setores (
+    USER_ID INT NOT NULL,
+    SETOR_ID INT NOT NULL,
+    PRIMARY KEY (USER_ID, SETOR_ID),
+    FOREIGN KEY (USER_ID) REFERENCES usuarios(USER_ID) ON DELETE CASCADE,
+    FOREIGN KEY (SETOR_ID) REFERENCES setores(SETOR_ID) ON DELETE CASCADE
+);
+```
 ### Principais Arquivos
 - **`CheckList.py`**: Arquivo principal que inicializa a aplicação e gerencia a interface gráfica.
 - **`Conexao.py`**: Responsável pela conexão com o banco de dados.
