@@ -73,7 +73,7 @@ CREATE TABLE `cargos` (
 
 #### Tabela de grupos
 ```sql
-CREATE TABLE grupo (
+CREATE TABLE `grupo` (
     `GRUPO_ID` INT AUTO_INCREMENT PRIMARY KEY,
     `NOME_GRUPO` VARCHAR(100) NOT NULL UNIQUE
 );
@@ -81,7 +81,7 @@ CREATE TABLE grupo (
 
 #### Tabela de permissões de visão das tarefas
 ```sql
-CREATE TABLE grupo_permissoes (
+CREATE TABLE `grupo_permissoes` (
     `GRUPO_ID` INT NOT NULL,
     `SETOR_ID` INT NOT NULL,
     PRIMARY KEY (`GRUPO_ID`, `SETOR_ID`),
@@ -92,7 +92,7 @@ CREATE TABLE grupo_permissoes (
 
 #### Tabela de relacionamento de usuário para setor
 ```sql
-CREATE TABLE usuario_setores (
+CREATE TABLE `usuario_setores` (
     `USER_ID` INT NOT NULL,
     `SETOR_ID` INT NOT NULL,
     PRIMARY KEY (`USER_ID`, `SETOR_ID`),
