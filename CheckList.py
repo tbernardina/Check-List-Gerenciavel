@@ -17,6 +17,9 @@ from Conexao import conexao_db
 import FuncoesBanco as FB
 import Notifications as NF
 from config import caminhoIcone, timeout_notify, ESTILOS
+import threading
+import time
+import os
 
 class App:
     def __init__(self):
@@ -24,7 +27,6 @@ class App:
         self.usuario = None
         self.senha = None
         self.nivel_acesso = None
-        self.setor_exec = None
         self.tarefa_status = "TODOS"
         self.setores_dict = None
         self.iniciar_login()
@@ -59,14 +61,12 @@ class App:
         print(f"usuario: {usuario}, senha: {senha}")
 
         nivel = FB.verificar_informacao_usuario(usuario, senha, "CARGO")
-        setor = FB.verificar_informacao_usuario(usuario, senha, "SETOR")
         id = FB.verificar_informacao_usuario(usuario, senha, "USER_ID") 
         senha_usuario = FB.verificar_informacao_usuario(usuario, senha, "SENHA")
         if nivel:
             self.usuario = usuario
             self.senha = senha_usuario
             self.nivel_acesso = nivel
-            self.setor_exec = setor
             self.id_usuario = id
             self.janela_login.destroy()
             self.abrir_interface_principal()
@@ -141,7 +141,7 @@ class App:
 
         botoes_rodape =[
             ("Atualizar", self.carregar_lista_tarefas),
-            ("Alterar minha senha", self.alterar_senha_usuario)
+            ("Alterar minha senha", self.alterar_senha_usuario),
         ]
 
         # Criando os botões e verificando o estado com base no nível de acesso
@@ -175,16 +175,15 @@ class App:
     def carregar_lista_tarefas(self):
         self.lista_tarefas.delete(0, tk.END)
         self.tarefa_status = self.status_selecionado.get()
-        tarefas = FB.carregar_tarefas(self.nivel_acesso, self.setor_exec, self.tarefa_status, self.id_usuario)
+        tarefas = FB.carregar_tarefas(self.nivel_acesso, self.tarefa_status, self.id_usuario)
         
-        if self.nivel_acesso != 1:
-            # Verificar se há tarefas pendentes
-            tarefas_pendentes = [tarefa for tarefa in tarefas if tarefa["STATUS"] == "PENDENTE"]
+        # Verificar se há tarefas pendentes
+        tarefas_pendentes = [tarefa for tarefa in tarefas if tarefa["STATUS"] == "PENDENTE"]
 
-            # Notificar o usuário se houver tarefas pendentes
-            if tarefas_pendentes and self.nivel_acesso == 3:
-                NF.enviar_notificacao(f"Você tem {len(tarefas_pendentes)} tarefas pendentes!")
-                self.janela_principal.after(timeout_notify, self.carregar_lista_tarefas)
+        # Notificar o usuário se houver tarefas pendentes
+        if tarefas_pendentes and self.nivel_acesso == 3:
+            NF.enviar_notificacao(f"Você tem {len(tarefas_pendentes)} tarefas pendentes!")
+            self.janela_principal.after(timeout_notify, self.carregar_lista_tarefas)
         for tarefa in tarefas:
             self.lista_tarefas.insert(tk.END, f" ● {tarefa['TAREFAS_ID']} - {tarefa['TITULO']} ({tarefa['STATUS']})")
     
@@ -295,7 +294,7 @@ class App:
 
     def criar_usuario(self):
         # Criar o popup
-        popup, popup_conteudo = self.criar_popup("Criar Novo Usuário", lambda: self.salvar_usuario(campo_nome, campo_senha, cargos_dict[cargo_selecionado.get()], setores_dict[setor_selecionado.get()], popup))
+        popup, popup_conteudo = self.criar_popup("Criar Novo Usuário", lambda: self.salvar_usuario(campo_nome, campo_senha, cargos_dict[cargo_selecionado.get()], popup))
 
         # Campo para nome do usuário
         self.criar_rotulo(popup_conteudo, "Nome do Usuário:", 0, 0, **ESTILOS["texto"])
@@ -317,18 +316,6 @@ class App:
         cargos_nomes = list(cargos_dict.keys())
         cargo_selecionado = tk.StringVar(value=cargos_nomes[0])
         tk.OptionMenu(popup_conteudo, cargo_selecionado, *cargos_nomes).grid(row=2, column=1, pady=5)
-
-       # Dropdown para selecionar o setor
-        self.criar_rotulo(popup_conteudo, "Setor:", 3, 0, **ESTILOS["texto"])
-        setores = FB.carregar_setores()  # Função que retorna uma lista de setores do banco
-        setores_dict = {setor[1]: setor[0] for setor in setores}  # mapeando nome para id
-
-        # Opção de menu com nomes de setores
-        setores_nomes = [setor[1] for setor in setores]
-        setor_selecionado = tk.StringVar(value=setores_nomes[0])
-        setor_selecionado.set("Selecione um setor")
-        setor_menu = tk.OptionMenu(popup_conteudo, setor_selecionado, *setores_nomes)
-        setor_menu.grid(row=3, column=1, pady=5)
 
     def marcar_concluida(self):
         try:
@@ -444,7 +431,6 @@ class App:
         setores = self.setor_selecionado.get()
         setor_id = self.setores_dict[setores]
         funcionario = self.funcionario_selecionado.get()
-        print(setor_id)
         if not titulo or not descricao or setor_id == "Selecione um setor" or funcionario == "Selecione um funcionário":
             messagebox.showwarning("Campos Incompletos", "Por favor, preencha todos os campos antes de salvar.")
             return
@@ -468,5 +454,6 @@ class App:
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao salvar tarefa: {e}")
 
-if __name__ == "__main__":
-    App()
+if os.path.exists(caminhoIcone):
+    if __name__ == "__main__":
+        App()

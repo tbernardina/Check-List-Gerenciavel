@@ -43,7 +43,7 @@ def verificar_informacao_usuario(usuario, senha, coluna):
 
 def select_tarefas(id_tarefa):
     query = """select t.TAREFAS_ID, t.TITULO, t.DESCRICAO, t.STATUS, t.TAREFA_SOLUCAO, t.DATA_CONCLUSAO, 
-    s.NOME_SETOR, 
+    s.NOME_SETOR,
     us.NOME as FUNCIONARIO_SOLUCAO_NOME, ud.NOME as FUNCIONARIO_DESTINO_NOME from tarefas t
     left join setores s on t.SETOR = s.SETOR_ID 
     left join usuarios us on t.FUNCIONARIO_SOLUCAO = us.USER_ID 
@@ -51,15 +51,19 @@ def select_tarefas(id_tarefa):
     WHERE TAREFAS_ID = %s"""
     return executar_query(query, (id_tarefa,), fetchone=True)
 
-def carregar_tarefas(nivel_acesso, setor_exec,tarefa_status, usuario_id):
+def carregar_tarefas(nivel_acesso, tarefa_status, usuario_id):
     print(f"Este é o nivel de acesso: {nivel_acesso}, esse é o status selecionado: {tarefa_status} e esse é o id do usuário {usuario_id}")
 
     if nivel_acesso == 3 and tarefa_status != "TODOS":
-        query = "SELECT * FROM tarefas WHERE STATUS = %s AND FUNCIONARIO_DESTINO = %s"
+        query = """
+        SELECT * FROM tarefas WHERE STATUS = %s AND FUNCIONARIO_DESTINO = %s
+        """
         return executar_query(query, (tarefa_status, usuario_id ), fetchall=True)
     
     elif nivel_acesso == 3 and tarefa_status == "TODOS":
-        query = "SELECT * FROM tarefas WHERE FUNCIONARIO_DESTINO = %s"
+        query = """
+        SELECT * FROM tarefas WHERE FUNCIONARIO_DESTINO = %s
+        """
         return executar_query(query, (usuario_id), fetchall=True)
     
     elif nivel_acesso == 2 and tarefa_status != "TODOS":
@@ -67,7 +71,7 @@ def carregar_tarefas(nivel_acesso, setor_exec,tarefa_status, usuario_id):
         SELECT t.* FROM tarefas t
         JOIN grupo_permissoes gp ON t.SETOR = gp.SETOR_ID
         JOIN usuarios u ON u.GRUPO_ID = gp.GRUPO_ID
-        WHERE u.USER_ID = %s AND t.STATUS = %s;
+        WHERE u.USER_ID = %s AND t.STATUS = %s
         """
         return executar_query(query, (usuario_id, tarefa_status), fetchall=True)
     
@@ -76,7 +80,7 @@ def carregar_tarefas(nivel_acesso, setor_exec,tarefa_status, usuario_id):
         SELECT t.* FROM tarefas t
         JOIN grupo_permissoes gp ON t.SETOR = gp.SETOR_ID
         JOIN usuarios u ON u.GRUPO_ID = gp.GRUPO_ID
-        WHERE u.USER_ID = %s;
+        WHERE u.USER_ID = %s
         """
         return executar_query(query, (usuario_id), fetchall=True)
     
@@ -135,20 +139,20 @@ def carregar_cargos():
     """
     Busca os cargos existentes no banco de dados.
     """
-    query = "SELECT CARGOS_ID, NOME_CARGO FROM cargos"
+    query = """SELECT CARGOS_ID, NOME_CARGO FROM cargos WHERE CARGOS_ID - 1"""
     return executar_query(query, fetchall=True)
 
-def criar_usuario(nome, senha, cargo_id, setor_id):
+def criar_usuario(nome, senha, cargo_id):
     query = """
-        INSERT INTO usuarios (NOME, SENHA, CARGO, SETOR)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO usuarios (NOME, SENHA, CARGO)
+        VALUES (%s, %s, %s)
     """
-    executar_query(query, (nome, senha, cargo_id, setor_id))
+    executar_query(query, (nome, senha, cargo_id))
 
 def carregar_funcionarios_por_setor(setor):
     query = """
         SELECT u.USER_ID, u.NOME
-        FROM usuario_setores us
+        FROM usuarios_setores us
         JOIN usuarios u ON us.USER_ID = u.USER_ID
         WHERE us.SETOR_ID = %s
         """
@@ -179,3 +183,12 @@ def alterar_senha(id_usuario, s_nova):
     """
     query = "UPDATE usuarios set SENHA = %s where USER_ID = %s"
     return executar_query(query, (s_nova, id_usuario))
+
+def carregar_usuarios_admin():
+    """
+    Retorna todos os usuários, exceto administradores.
+    """
+    query = "SELECT USER_ID, NOME FROM usuarios WHERE CARGO != 1"
+    resultados = executar_query(query, fetchall=True)
+    
+    return resultados if resultados else []

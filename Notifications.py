@@ -11,12 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from plyer import notification
+from plyer.platforms.win.notification import WindowsNotification
+from config import timeout_notify
 
 def enviar_notificacao(mensagem):
-    notification.notify(
-        title="Tarefa Pendente",
-        message=mensagem,
-        app_name="Gerenciador de Tarefas",
-        timeout=5  # Tempo em segundos para a notificação desaparecer
-    )
+    try:
+        notifier = WindowsNotification()
+        notifier.notify(
+            title="Tarefas Pendentes",
+            message=mensagem,
+            app_name="CheckList",
+            timeout=timeout_notify
+        )
+        print("Notificação enviada com sucesso!")
+    except Exception as e:
+        print(f"Erro ao enviar notificação: {e}")
