@@ -171,7 +171,11 @@ def carregar_funcionarios_por_id(setor):
     """
     Carrega os IDs dos funcionários vinculados ao setor selecionado.
     """
-    query = "SELECT USER_ID FROM usuarios WHERE SETOR = %s"
+    query = """
+    SELECT u.USER_ID FROM usuarios u 
+    RIGHT JOIN usuarios_setores us ON u.USER_ID=us.USER_ID 
+    WHERE us.SETOR_ID = %s
+    """
     print(f"Query: {query} | Parâmetro: {setor}")  # Debug
     resultados = executar_query(query, (setor,), fetchall=True)
     print(f"Resultados da Query: {resultados}")  # Debug
