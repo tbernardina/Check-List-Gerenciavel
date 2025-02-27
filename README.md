@@ -92,7 +92,7 @@ CREATE TABLE `grupo_permissoes` (
 
 #### Tabela de relacionamento de usuário para setor
 ```sql
-CREATE TABLE `usuario_setores` (
+CREATE TABLE `usuarios_setores` (
     `USER_ID` INT NOT NULL,
     `SETOR_ID` INT NOT NULL,
     PRIMARY KEY (`USER_ID`, `SETOR_ID`),
@@ -116,7 +116,7 @@ CREATE TABLE `usuario_setores` (
   - `cargos`: Define os níveis de acesso (Administrador, Supervisor, Usuário).
   - `grupos`: Nomeia grupos de visualização dos supervisores.
   - `grupo_permissoes`: Define quais setores o usuário supervisor terá acesso para visualização.
-  - `usuario_setores`: Tabela utilizada para vincular um usuário para mais de um setor.
+  - `usuarios_setores`: Tabela utilizada para vincular um usuário para mais de um setor.
 
 ## Requisitos
 
