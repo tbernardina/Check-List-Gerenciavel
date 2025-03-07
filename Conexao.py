@@ -16,6 +16,10 @@ import pymysql.cursors
 import config as cfg
 
 def conexao_db():
+    if cfg.server_ip == "192.168.1.76":
+        print("Você está no servidor de produção")
+    else:
+        print("Você está no servidor de teste")
     return pymysql.connect(
         host= cfg.server_ip,
         user = cfg.user,
@@ -23,4 +27,4 @@ def conexao_db():
         database = cfg.database,
         charset = "utf8mb4",
         cursorclass = pymysql.cursors.DictCursor 
-)
+    )
