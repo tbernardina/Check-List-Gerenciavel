@@ -62,7 +62,7 @@ def carregar_tarefas(nivel_acesso, tarefa_status, usuario_id):
     
     elif nivel_acesso == 3 and tarefa_status == "TODOS":
         query = """
-        SELECT * FROM tarefas WHERE FUNCIONARIO_DESTINO = %s
+        SELECT * FROM tarefas WHERE FUNCIONARIO_DESTINO = %s AND STATUS - "INATIVO" AND STATUS - "AGENDADA"
         """
         return executar_query(query, (usuario_id), fetchall=True)
     
@@ -80,7 +80,7 @@ def carregar_tarefas(nivel_acesso, tarefa_status, usuario_id):
         SELECT t.* FROM tarefas t
         JOIN grupo_permissoes gp ON t.SETOR = gp.SETOR_ID
         JOIN usuarios u ON u.GRUPO_ID = gp.GRUPO_ID
-        WHERE u.USER_ID = %s
+        WHERE u.USER_ID = %s AND t.STATUS - "INATIVO" AND t.STATUS - "AGENDADA"
         """
         return executar_query(query, (usuario_id), fetchall=True)
     
@@ -89,10 +89,13 @@ def carregar_tarefas(nivel_acesso, tarefa_status, usuario_id):
         return executar_query(query, (tarefa_status), fetchall=True)
     
     elif nivel_acesso == 1 and tarefa_status == "TODOS":
-        query = "SELECT * FROM tarefas"
+        query = """
+                SELECT * FROM tarefas 
+                WHERE STATUS - "INATIVO" AND STATUS - "AGENDADA"
+                """
         return executar_query(query, fetchall=True)
 
-def adicionar_tarefa_db(titulo, descricao, setor, id_funcionarios):
+def adicionar_tarefa_db(titulo, descricao, setor, id_funcionarios, data_agendada, status):
     """
     Adiciona uma ou mais tarefas no banco de dados.
     Se 'id_funcionarios' for uma lista, adiciona uma tarefa para cada funcionário.
