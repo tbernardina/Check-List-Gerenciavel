@@ -62,7 +62,7 @@ def carregar_tarefas(nivel_acesso, tarefa_status, usuario_id):
     
     elif nivel_acesso == 3 and tarefa_status == "TODOS":
         query = """
-        SELECT * FROM tarefas WHERE FUNCIONARIO_DESTINO = %s AND STATUS - "INATIVO" AND STATUS - "AGENDADA"
+        SELECT * FROM tarefas WHERE FUNCIONARIO_DESTINO = %s AND STATUS != "INATIVO" AND STATUS != "AGENDADA"
         """
         return executar_query(query, (usuario_id), fetchall=True)
     
@@ -80,7 +80,7 @@ def carregar_tarefas(nivel_acesso, tarefa_status, usuario_id):
         SELECT t.* FROM tarefas t
         JOIN grupo_permissoes gp ON t.SETOR = gp.SETOR_ID
         JOIN usuarios u ON u.GRUPO_ID = gp.GRUPO_ID
-        WHERE u.USER_ID = %s AND t.STATUS - "INATIVO" AND t.STATUS - "AGENDADA"
+        WHERE u.USER_ID = %s AND t.STATUS != "INATIVO"
         """
         return executar_query(query, (usuario_id), fetchall=True)
     
@@ -91,7 +91,7 @@ def carregar_tarefas(nivel_acesso, tarefa_status, usuario_id):
     elif nivel_acesso == 1 and tarefa_status == "TODOS":
         query = """
                 SELECT * FROM tarefas 
-                WHERE STATUS - "INATIVO" AND STATUS - "AGENDADA"
+                WHERE STATUS != "INATIVO"
                 """
         return executar_query(query, fetchall=True)
 
@@ -102,15 +102,15 @@ def adicionar_tarefa_db(titulo, descricao, setor, id_funcionarios, data_agendada
     """
     if isinstance(id_funcionarios, list):  # Caso seja uma lista de IDs (quando "TODOS" for selecionado)
         for id_funcionario in id_funcionarios:
-            query = "INSERT INTO tarefas (TITULO, DESCRICAO, SETOR, FUNCIONARIO_DESTINO) VALUES (%s, %s, %s, %s)"
-            executar_query(query, (titulo, descricao, setor, id_funcionario))
+            query = "INSERT INTO tarefas (TITULO, DESCRICAO, SETOR, FUNCIONARIO_DESTINO, DATA_AGENDADA, STATUS) VALUES (%s, %s, %s, %s,%s,%s)"
+            executar_query(query, (titulo, descricao, setor, id_funcionario, data_agendada, status))
 
     else:  # Caso seja apenas um ID
-        query = "INSERT INTO tarefas (TITULO, DESCRICAO, SETOR, FUNCIONARIO_DESTINO) VALUES (%s, %s, %s, %s)"
-        executar_query(query, (titulo, descricao, setor, id_funcionarios))
+        query = "INSERT INTO tarefas (TITULO, DESCRICAO, SETOR, FUNCIONARIO_DESTINO, DATA_AGENDADA, STATUS) VALUES (%s, %s, %s, %s,%s,%s)"
+        executar_query(query, (titulo, descricao, setor, id_funcionarios, data_agendada, status))
 
 def remover_tarefa_bd(id_tarefa):
-    query = "DELETE FROM tarefas WHERE TAREFAS_ID = %s"
+    query = """UPDATE tarefas SET STATUS = "INATIVO" WHERE TAREFAS_ID = %s"""
     executar_query(query, (id_tarefa,))
 
 def marcar_tarefa_concluida(id_tarefa):
