@@ -12,14 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import tkinter as tk
+from tkinter import ttk
 from tkinter import messagebox
+from tkinter import filedialog
+from tkcalendar import DateEntry
+from datetime import datetime
 from Conexao import conexao_db
 import FuncoesBanco as FB
 import Notifications as NF
-from config import caminhoIcone, timeout_notify, ESTILOS
-import threading
-import time
+from config import caminhoAnexo, server_ip, server_user, server_password,caminhoIcone, timeout_notify, ESTILOS
 import os
+import shutil
+import uuid
+from smb.SMBConnection import SMBConnection
 
 class App:
     def __init__(self):
@@ -225,7 +230,7 @@ class App:
 
     def criar_texto_campo(self, frame, titulo, valor):
         tk.Label(frame, text=titulo, **ESTILOS["texto"]).pack()
-        campo = tk.Text(frame, width=35, height=5)
+        campo = tk.Text(frame, width=40, height=7)
         campo.insert("1.0", valor)
         campo.configure(state="disabled")
         campo.pack(pady=5)
@@ -246,8 +251,24 @@ class App:
 
     def adicionar_tarefa(self):
         # Criar a janela popup para adicionar uma nova tarefa
-        popup, popup_conteudo = self.criar_popup("Adicionar Nova Tarefa", lambda: self.salvar_adicao_tarefa(popup))
-        
+        popup, popup_conteudo = self.criar_popup("Adicionar Nova Tarefa", lambda: self.salvar_adicao_tarefa(popup, self.lbl_caminho))
+        self.check_data = tk.BooleanVar(value=False)
+        horas=[f"{h:02}" for h in range(24)]
+        minutos=[f"{m:02}" for m in range(60)]
+        self.data_agenda = DateEntry(popup_conteudo, state="disabled", date_pattern='dd/mm/yyyy')
+        self.data_hora = ttk.Combobox(popup_conteudo, values=horas, state="disabled", width=3)
+        self.data_minutos = ttk.Combobox(popup_conteudo, values=minutos, state="disabled", width=5)
+
+        def hab_data():
+            if self.check_data.get():
+                self.data_agenda.configure(state="normal")
+                self.data_hora.configure(state="normal")
+                self.data_minutos.configure(state="normal")
+            else:
+                self.data_agenda.configure(state="disabled")
+                self.data_hora.configure(state="disabled")
+                self.data_minutos.configure(state="disabled")
+
         # Campo para título da tarefa
         self.criar_rotulo(popup_conteudo, "Título da Tarefa:", 0, 0, **ESTILOS["texto"])
         self.campo_titulo = tk.Entry(popup_conteudo, width=50)
@@ -259,7 +280,7 @@ class App:
         self.campo_descricao.grid(row=1, column=1, pady=5)
 
         # Dropdown para selecionar o setor
-        self.criar_rotulo(popup_conteudo, "Setor:", 2, 0, **ESTILOS["texto"])
+        self.criar_rotulo(popup_conteudo, "Setor:", 3, 0, **ESTILOS["texto"])
         setores = FB.carregar_setores()  # Função que retorna uma lista de setores do banco
         self.setores_dict = {setor[1]: setor[0] for setor in setores}  # mapeando nome para id
 
@@ -268,15 +289,26 @@ class App:
         self.setor_selecionado = tk.StringVar(value=setores_nomes[0])
         self.setor_selecionado.set("Selecione um setor")
         setor_menu = tk.OptionMenu(popup_conteudo, self.setor_selecionado, *setores_nomes, command=self.atualizar_funcionarios)
-        setor_menu.grid(row=2, column=1, pady=5)
+        setor_menu.grid(row=3, column=1, pady=5)
 
         # Dropdown para selecionar o funcionário (inicialmente vazio)
-        self.criar_rotulo(popup_conteudo, "Funcionário Responsável:", 3, 0, **ESTILOS["texto"])
+        self.criar_rotulo(popup_conteudo, "Funcionário Responsável:", 4, 0, **ESTILOS["texto"])
         self.funcionario_selecionado = tk.StringVar()
         self.funcionario_selecionado.set("Selecione um funcionário")
         self.funcionarios_menu = tk.OptionMenu(popup_conteudo, self.funcionario_selecionado, "")
-        self.funcionarios_menu.grid(row=3, column=1, pady=5)
-  
+        self.funcionarios_menu.grid(row=4, column=1, pady=5)
+
+        # Área destinada ao agendamento de tarefas
+        tk.Checkbutton(popup_conteudo, text="Agendar tarefa?", variable=self.check_data, command=hab_data).grid(row=5, column=1)
+
+        self.criar_rotulo(popup_conteudo, "Data:", 6,0,**ESTILOS["texto"])
+        self.criar_rotulo(popup_conteudo, "Hora: ", 7,0, **ESTILOS["texto"])
+        self.criar_rotulo(popup_conteudo, "Minutos: ", 8,0,**ESTILOS["texto"])
+        self.data_agenda.grid(row=6, column=1)
+        self.data_hora.grid(row=7, column=1)
+        self.data_minutos.grid(row=8, column=1)
+        
+
     def alterar_senha_usuario(self):
         popup, popup_conteudo = self.criar_popup("Alterar Minha Senha", lambda: self.salvar_senha(senha_antiga, senha_nova, confirmar_senha_nova, popup))
 
@@ -436,12 +468,19 @@ class App:
             return
 
         try:
-           # Verificar se "TODOS" foi selecionado
-            if funcionario == "TODOS":
-                ids_funcionarios = FB.carregar_funcionarios_por_id(setor_id)
-                if ids_funcionarios:
-                    FB.adicionar_tarefa_db(titulo, descricao, setor_id, ids_funcionarios)
-                else:
+            data_agendada = None
+            status = "PENDENTE"
+            if self.check_data.get():
+                data = self.data_agenda.get()
+                hora = self.data_hora.get()
+                minuto = self.data_minutos.get()
+                data_agendada = datetime.strptime(f"{data} {hora}:{minuto}:00", "%d/%m/%Y %H:%M:%S")
+                status = "AGENDADA"
+            print(f"A data agendada foi: {data_agendada}")
+
+
+            funcionarios = FB.carregar_funcionarios_por_id (setor_id)
+            if not funcionarios:
                     messagebox.showwarning("Sem Funcionários", "Não há funcionários vinculados a este setor.")
             
             else:
