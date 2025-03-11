@@ -481,7 +481,7 @@ class App:
             if funcionario == "TODOS":
                 ids_funcionarios = FB.carregar_funcionarios_por_id (setor_id)
                 if ids_funcionarios:
-                        FB.adicionar_tarefa_db(titulo, descricao, setor_id, funcionario_id, data_agendada, status)
+                        FB.adicionar_tarefa_db(titulo, descricao, setor_id, ids_funcionarios, data_agendada, status)
                 else:
                     messagebox.showwarning("Sem Funcionários", "Não há funcionários vinculados a este setor.")
             
