@@ -22,13 +22,10 @@ CREATE TABLE `usuarios` (
   `NOME` varchar(35) DEFAULT NULL,
   `SENHA` varchar(16) NOT NULL,
   `CARGO` int DEFAULT NULL,
-  `SETOR` int DEFAULT NULL,
   PRIMARY KEY (`USER_ID`),
   UNIQUE KEY `NOME` (`NOME`),
-  KEY `FK_SETOR` (`SETOR`),
   KEY `fk_cargo` (`CARGO`),
   CONSTRAINT `fk_cargo` FOREIGN KEY (`CARGO`) REFERENCES `cargos` (`CARGOS_ID`),
-  CONSTRAINT `FK_SETOR` FOREIGN KEY (`SETOR`) REFERENCES `setores` (`SETOR_ID`)
 );
 ```
 
@@ -38,10 +35,11 @@ CREATE TABLE `tarefas` (
   `TAREFAS_ID` int NOT NULL AUTO_INCREMENT,
   `TITULO` varchar(30) DEFAULT NULL,
   `DESCRICAO` varchar(400) NOT NULL,
-  `STATUS` enum('PENDENTE','CONCLUÍDA') DEFAULT 'PENDENTE',
+  `STATUS` enum('PENDENTE','CONCLUÍDA', 'AGENDADA', 'INATIVO') DEFAULT 'PENDENTE',
   `SETOR` int DEFAULT NULL,
   `TAREFA_SOLUCAO` varchar(500) DEFAULT NULL,
   `DATA_CONCLUSAO` timestamp NULL DEFAULT NULL,
+  `DATA_AGENDADA` timestamp NULL DEFAULT NULL,
   `FUNCIONARIO_SOLUCAO` int DEFAULT NULL,
   `FUNCIONARIO_DESTINO` int DEFAULT NULL,
   PRIMARY KEY (`TAREFAS_ID`),
@@ -100,6 +98,33 @@ CREATE TABLE `usuarios_setores` (
     FOREIGN KEY (`SETOR_ID`) REFERENCES setores(`SETOR_ID`) ON DELETE CASCADE
 );
 ```
+
+#### Tabela de armazenamento dos caminhos de documentos anexados
+```sql
+CREATE TABLE `anexos_imagem` (
+  `ANEXOS_ID` int NOT NULL AUTO_INCREMENT,
+  `TAREFAS_ID` int NOT NULL,
+  `NOME_ANEXO` varchar(255) NOT NULL,
+  `caminho_arquivo` varchar(355) NOT NULL,
+  `TIPO` enum('CRIAÇÃO','SOLUÇÃO') DEFAULT NULL,
+  PRIMARY KEY (`ANEXOS_ID`),
+  KEY `TAREFAS_ID` (`TAREFAS_ID`),
+  CONSTRAINT `anexos_imagem_ibfk_1` FOREIGN KEY (`TAREFAS_ID`) REFERENCES `tarefas` (`TAREFAS_ID`) ON DELETE CASCADE
+);
+```
+#### Evento para checagem de data e atualização de tarefas agendadas
+```sql
+CREATE DEFINER=`root`@`localhost` EVENT `ATUALIZAR_TAREFAS_AGENDADAS` 
+  ON SCHEDULE EVERY 1 MINUTE 
+  DO 
+  BEGIN
+  UPDATE TAREFAS 
+  SET STATUS = 'PENDENTE' 
+  WHERE STATUS = 'AGENDADA' AND DATA_AGENDADA <= NOW();
+END
+```
+
+
 ### Principais Arquivos
 - **`CheckList.py`**: Arquivo principal que inicializa a aplicação e gerencia a interface gráfica.
 - **`Conexao.py`**: Responsável pela conexão com o banco de dados.
@@ -117,6 +142,10 @@ CREATE TABLE `usuarios_setores` (
   - `grupos`: Nomeia grupos de visualização dos supervisores.
   - `grupo_permissoes`: Define quais setores o usuário supervisor terá acesso para visualização.
   - `usuarios_setores`: Tabela utilizada para vincular um usuário para mais de um setor.
+  - `anexos_imagem`: Tabela destinada a armazenar o caminho para anexo de documentos na tarefa.
+
+- **Eventos automáticos**:
+  - `atualizar_tarefas_agendadas`: Evento que atualiza o status de tarefas agendadas com base na data e hora do servidor.
 
 ## Requisitos
 
@@ -144,9 +173,9 @@ Para compilar o aplicativo em um executável utilizando PyInstaller:
    pip install pyinstaller
    ```
 
-2. Execute o comando para criar o executável no modo **`onedir`**:
+2. Execute o comando para criar o executável no modo **`onedir`**, **`exclude-module`** e **`noconsole`**:
    ```bash
-   pyinstaller --onedir --icon=Check_List_Icone.ico CheckList.py
+   pyinstaller --onedir --noconsole --exclude-module=config --icon=Check_List_Icone.ico CheckList.py
    ```
 
 ### Configurar o Instalador
@@ -188,7 +217,7 @@ caminhoIcone = "Check_List_Icone.ico"
 ## Uso do Aplicativo
 1. Abra o aplicativo e realize login com suas credenciais.
 2. Dependendo do seu cargo, acesse as funcionalidades:
-   - Administradores: Criar, remover e editar tarefas.
+   - Administradores: Criar tarefas, criar usuários, remover e editar tarefas.
    - Supervisores: Visualizar e criar tarefas de um setor especifico.
    - Usuários: Visualizar e concluir tarefas atribuídas.
 3. Notificações serão exibidas para tarefas pendentes.
