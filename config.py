@@ -18,10 +18,6 @@ user = "GerenciadorCheckList"
 password = "Y|tjZm%rTHM5@!NUsR5N*"
 database = "LACSM"
 
-server_user = "Administrador"
-server_password = "Reis2004_"
-caminhoAnexo = "uploads"
-
 # Variavel caminho para a imagem de icone do app
 caminhoIcone = "Check_List_LACSM_Icone.ico"
 
