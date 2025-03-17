@@ -22,11 +22,13 @@ def executar_query(query, parametros=(), fetchone=False, fetchall=False):
     try:
         with conexao.cursor() as cursor:
             cursor.execute(query, parametros)
+            tarefa_id = cursor.lastrowid
             if fetchone:
                 return cursor.fetchone()
             if fetchall:
                 return cursor.fetchall()
             conexao.commit()
+            return tarefa_id
     except pymysql.MySQLError as e:
         print(f"Erro ao executar query: {e}")
         return None
@@ -49,7 +51,11 @@ def select_tarefas(id_tarefa):
     left join usuarios us on t.FUNCIONARIO_SOLUCAO = us.USER_ID 
     left join usuarios ud on t.FUNCIONARIO_DESTINO = ud.USER_ID
     WHERE TAREFAS_ID = %s"""
-    return executar_query(query, (id_tarefa,), fetchone=True)
+    return executar_query(query, (id_tarefa), fetchone=True)
+
+def select_anexo(id_tarefa, tipo):
+    query = """SELECT CAMINHO_ARQUIVO FROM anexos_imagem where TAREFAS_ID = %s AND TIPO = %s"""
+    return executar_query(query, (id_tarefa, tipo), fetchall=True)
 
 def carregar_tarefas(nivel_acesso, tarefa_status, usuario_id):
     print(f"Este é o nivel de acesso: {nivel_acesso}, esse é o status selecionado: {tarefa_status} e esse é o id do usuário {usuario_id}")
@@ -102,12 +108,19 @@ def adicionar_tarefa_db(titulo, descricao, setor, id_funcionarios, data_agendada
     """
     if isinstance(id_funcionarios, list):  # Caso seja uma lista de IDs (quando "TODOS" for selecionado)
         for id_funcionario in id_funcionarios:
-            query = "INSERT INTO tarefas (TITULO, DESCRICAO, SETOR, FUNCIONARIO_DESTINO, DATA_AGENDADA, STATUS) VALUES (%s, %s, %s, %s,%s,%s)"
-            executar_query(query, (titulo, descricao, setor, id_funcionario, data_agendada, status))
+            query = "INSERT INTO tarefas (TITULO, DESCRICAO, SETOR, FUNCIONARIO_DESTINO, DATA_AGENDADA, STATUS) VALUES (%s, %s, %s, %s, %s, %s)"
+            tarefa_id_db = executar_query(query, (titulo, descricao, setor, id_funcionario, data_agendada, status))
+            print (tarefa_id_db)
+            return tarefa_id_db
 
     else:  # Caso seja apenas um ID
-        query = "INSERT INTO tarefas (TITULO, DESCRICAO, SETOR, FUNCIONARIO_DESTINO, DATA_AGENDADA, STATUS) VALUES (%s, %s, %s, %s,%s,%s)"
-        executar_query(query, (titulo, descricao, setor, id_funcionarios, data_agendada, status))
+        query = "INSERT INTO tarefas (TITULO, DESCRICAO, SETOR, FUNCIONARIO_DESTINO, DATA_AGENDADA, STATUS) VALUES (%s, %s, %s, %s, %s, %s)"
+        tarefa_id_db = executar_query(query, (titulo, descricao, setor, id_funcionarios, data_agendada, status))
+        return tarefa_id_db
+
+def adicionar_tarefa_anexo_db(id_tarefa, nome_arquivo,caminho_arquivo, tipo_arquivo):
+    query="""INSERT INTO anexos_imagem (TAREFAS_ID, NOME_ANEXO, CAMINHO_ARQUIVO, TIPO) VALUES (%s, %s, %s, %s)"""
+    executar_query(query, (id_tarefa, nome_arquivo, caminho_arquivo, tipo_arquivo))
 
 def remover_tarefa_bd(id_tarefa):
     query = """UPDATE tarefas SET STATUS = "INATIVO" WHERE TAREFAS_ID = %s"""
