@@ -7,4 +7,10 @@ __pycache__/Conexao.cpython-313.pyc
 /dist
 CheckList.spec
 __pycache__/Conexao.cpython-313.pyc
+/__pycache__/*
+build/
+/build
 /__pycache__
+/build/CheckList
+/dist
+/dist/CheckList

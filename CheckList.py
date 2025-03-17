@@ -266,7 +266,7 @@ class App:
         for texto, comando in botoes_rodape:
             tk.Button(frame_botoes_rodape, text=texto, command=comando).pack(side=tk.LEFT, padx=5)
 
-        self.lista_tarefas = tk.Listbox(frame_lista, width=50, height=15, **ESTILOS["lista_tarefas"])
+        self.lista_tarefas = tk.Listbox(frame_lista, width=100, height=15, **ESTILOS["lista_tarefas"])
         self.lista_tarefas.pack(side=tk.LEFT, padx=5)
         self.lista_tarefas.bind("<Double-Button-1>", self.detalhes_tarefa)
 
@@ -351,7 +351,9 @@ class App:
 
     def adicionar_tarefa(self):
         # Criar a janela popup para adicionar uma nova tarefa
+
         popup, popup_conteudo = self.criar_popup("Adicionar Nova Tarefa", lambda: self.salvar_adicao_tarefa(popup, self.caminhos_completos))
+
         self.check_data = tk.BooleanVar(value=False)
         horas=[f"{h:02}" for h in range(24)]
         minutos=[f"{m:02}" for m in range(60)]
@@ -656,7 +658,7 @@ class App:
 
             # Verificar se "TODOS" foi selecionado
             if funcionario == "TODOS":
-                ids_funcionarios = FB.carregar_funcionarios_por_id(setor_id)
+                ids_funcionarios = FB.carregar_funcionarios_por_id (setor_id)
                 if ids_funcionarios:
                     tarefa_id_int = FB.adicionar_tarefa_db(titulo, descricao, setor_id, funcionario_id, data_agendada, status)
                 tarefa_id_anexo = str(tarefa_id_int)
