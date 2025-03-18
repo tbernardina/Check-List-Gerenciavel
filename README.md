@@ -112,6 +112,18 @@ CREATE TABLE `anexos_imagem` (
   CONSTRAINT `anexos_imagem_ibfk_1` FOREIGN KEY (`TAREFAS_ID`) REFERENCES `tarefas` (`TAREFAS_ID`) ON DELETE CASCADE
 );
 ```
+
+#### Tabela para usuários destinados a tarefas
+```sql
+CREATE TABLE `usuarios_tarefas`(
+`TAREFAS_ID` int not null,
+`USER_ID` int not null,
+CONSTRAINT `id_tarefa_usuarios_tarefas` FOREIGN KEY (`TAREFAS_ID`) REFERENCES `tarefas` (`TAREFAS_ID`) ON DELETE CASCADE,
+CONSTRAINT `id_usuario_usuarios_tarefas` FOREIGN KEY (`USER_ID`) REFERENCES `usuarios` (`USER_ID`) ON DELETE CASCADE
+);
+
+```
+
 #### Evento para checagem de data e atualização de tarefas agendadas
 ```sql
 CREATE DEFINER=`root`@`localhost` EVENT `ATUALIZAR_TAREFAS_AGENDADAS` 
