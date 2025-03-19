@@ -48,9 +48,11 @@ def select_tarefas(id_tarefa):
     s.NOME_SETOR,
     us.NOME as FUNCIONARIO_SOLUCAO_NOME, ud.NOME as FUNCIONARIO_DESTINO_NOME from tarefas t
     left join setores s on t.SETOR = s.SETOR_ID 
-    left join usuarios us on t.FUNCIONARIO_SOLUCAO = us.USER_ID 
-    left join usuarios ud on t.FUNCIONARIO_DESTINO = ud.USER_ID
-    WHERE TAREFAS_ID = %s"""
+    left join usuarios_tarefas fs on t.TAREFAS_ID = fs.TAREFAS_ID and fs.TIPO = 'SOLUÇÃO'
+    left join usuarios us on fs.USER_ID = us.USER_ID
+    left join usuarios_tarefas fd on t.TAREFAS_ID = fd.TAREFAS_ID and fd.TIPO = 'DESTINO'
+    left join usuarios ud on fd.USER_ID = ud.USER_ID
+    WHERE t.TAREFAS_ID = %s"""
     return executar_query(query, (id_tarefa), fetchone=True)
 
 def select_anexo(id_tarefa, tipo):
@@ -62,13 +64,13 @@ def carregar_tarefas(nivel_acesso, tarefa_status, usuario_id):
 
     if nivel_acesso == 3 and tarefa_status != "TODOS":
         query = """
-        SELECT * FROM tarefas WHERE STATUS = %s AND FUNCIONARIO_DESTINO = %s
+        SELECT t.*, ut.USER_ID FROM tarefas t join usuarios_tarefas ut on ut.TAREFAS_ID = t.TAREFAS_ID WHERE ut.USER_ID = %s AND STATUS = %s
         """
-        return executar_query(query, (tarefa_status, usuario_id ), fetchall=True)
+        return executar_query(query, (usuario_id, tarefa_status), fetchall=True)
     
     elif nivel_acesso == 3 and tarefa_status == "TODOS":
         query = """
-        SELECT * FROM tarefas WHERE FUNCIONARIO_DESTINO = %s AND STATUS != "INATIVO" AND STATUS != "AGENDADA"
+        SELECT t.*, ut.USER_ID FROM tarefas t join usuarios_tarefas ut on ut.TAREFAS_ID = t.TAREFAS_ID WHERE ut.USER_ID = %s AND STATUS != "INATIVO" AND STATUS != "AGENDADA"
         """
         return executar_query(query, (usuario_id), fetchall=True)
     
@@ -108,15 +110,18 @@ def adicionar_tarefa_db(titulo, descricao, setor, id_funcionarios, data_agendada
     """
     if isinstance(id_funcionarios, list):  # Caso seja uma lista de IDs (quando "TODOS" for selecionado)
         for id_funcionario in id_funcionarios:
-            query = "INSERT INTO tarefas (TITULO, DESCRICAO, SETOR, FUNCIONARIO_DESTINO, DATA_AGENDADA, STATUS) VALUES (%s, %s, %s, %s, %s, %s)"
-            tarefa_id_db = executar_query(query, (titulo, descricao, setor, id_funcionario, data_agendada, status))
-            print (tarefa_id_db)
-            return tarefa_id_db
-
+            query = "INSERT INTO tarefas (TITULO, DESCRICAO, SETOR, DATA_AGENDADA, STATUS) VALUES (%s, %s, %s, %s, %s)"
+            tarefa_id_db = executar_query(query, (titulo, descricao, setor, data_agendada, status))
+            adicionar_usuario_tarefa_db(tarefa_id_db, id_funcionario, "DESTINO")
     else:  # Caso seja apenas um ID
-        query = "INSERT INTO tarefas (TITULO, DESCRICAO, SETOR, FUNCIONARIO_DESTINO, DATA_AGENDADA, STATUS) VALUES (%s, %s, %s, %s, %s, %s)"
-        tarefa_id_db = executar_query(query, (titulo, descricao, setor, id_funcionarios, data_agendada, status))
-        return tarefa_id_db
+        query = "INSERT INTO tarefas (TITULO, DESCRICAO, SETOR, DATA_AGENDADA, STATUS) VALUES (%s, %s, %s, %s, %s)"
+        tarefa_id_db = executar_query(query, (titulo, descricao, setor, data_agendada, status))
+        adicionar_usuario_tarefa_db(tarefa_id_db, id_funcionarios, "DESTINO")
+    return tarefa_id_db
+
+def adicionar_usuario_tarefa_db(id_tarefa, id_funcionario, tipo):
+    query = "INSERT INTO usuarios_tarefas (TAREFAS_ID, USER_ID, TIPO) values(%s,%s,%s)"
+    executar_query(query, (id_tarefa, id_funcionario, tipo))
 
 def adicionar_tarefa_anexo_db(id_tarefa, nome_arquivo,caminho_arquivo, tipo_arquivo):
     query="""INSERT INTO anexos_imagem (TAREFAS_ID, NOME_ANEXO, CAMINHO_ARQUIVO, TIPO) VALUES (%s, %s, %s, %s)"""
@@ -138,10 +143,11 @@ def atualizar_status_tarefa(id_tarefa, descricao, usuario):
     query = """
         UPDATE tarefas
         SET TAREFA_SOLUCAO = %s, DATA_CONCLUSAO = CURRENT_TIMESTAMP,
-        FUNCIONARIO_SOLUCAO = %s, STATUS = "Concluída"
+        STATUS = "Concluída"
         WHERE TAREFAS_ID = %s
     """
-    executar_query(query, (descricao, usuario, id_tarefa))
+    adicionar_usuario_tarefa_db(id_tarefa, usuario, "SOLUÇÃO")
+    executar_query(query, (descricao, id_tarefa))
 
 def carregar_setores():
     """

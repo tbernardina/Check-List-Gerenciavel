@@ -35,6 +35,7 @@ class App:
         self.nivel_acesso = None
         self.tarefa_status = "TODOS"
         self.setores_dict = None
+        self.caminhos_completos = []
         self.iniciar_login()
 
     #TELA PARA VERIFICAR O NIVEL DE ACESSO E O SETOR DO USUARIO
@@ -660,9 +661,11 @@ class App:
             if funcionario == "TODOS":
                 ids_funcionarios = FB.carregar_funcionarios_por_id (setor_id)
                 if ids_funcionarios:
-                    tarefa_id_int = FB.adicionar_tarefa_db(titulo, descricao, setor_id, funcionario_id, data_agendada, status)
+                    tarefa_id_int = FB.adicionar_tarefa_db(titulo, descricao, setor_id, ids_funcionarios, data_agendada, status)
+                else:
+                    messagebox.showwarning("Sem Funcionários", "Não há funcionários vinculados a este setor.")
+                    return
                 tarefa_id_anexo = str(tarefa_id_int)
-                print(f"Tarefa_id: {tarefa_id_anexo}")
                 tarefas_criadas.append(tarefa_id_anexo)
                 print(f"tarefas criadas:{tarefas_criadas}")
                 # Envio de arquivos(unica vez)
@@ -692,15 +695,11 @@ class App:
                         print(f"Diretório criado: {destino}")
                     except Exception as e:
                         print(f"Erro na conexão SMB: {e}")
-                else:
-                    messagebox.showwarning("Sem Funcionários", "Não há funcionários vinculados a este setor.")
-                    return
             else:
                 # Buscar o ID do funcionário específico
                 funcionario_id = FB.buscar_id_funcionario(funcionario)
                 tarefa_id_int = FB.adicionar_tarefa_db(titulo, descricao, setor_id, funcionario_id, data_agendada, status)
                 tarefa_id_anexo = str(tarefa_id_int)
-                print(f"Tarefa_id: {tarefa_id_anexo}")
                 tarefas_criadas.append(tarefa_id_anexo)
                 print(f"tarefas criadas:{tarefas_criadas}")
                 # Envio de arquivos(unica vez)
