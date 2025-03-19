@@ -13,10 +13,10 @@
 # limitations under the License.
 
 # Variaveis de configuração de conexão com o servidor
-server_ip = "192.168.1.44"
-user = "GerenciadorCheckList"
+server_ip = ""
+user = ""
 password = ""
-database = "LACSM"
+database = ""
 
 # Variavel caminho para a imagem de icone do app
 caminhoIcone = "Check_List_LACSM_Icone.ico"
