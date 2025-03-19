@@ -14,8 +14,8 @@
 
 # Variaveis de configuração de conexão com o servidor
 server_ip = "192.168.1.44"
-user = "GerenciadorCheckList" #Y|tjZm%rTHM5@!NUsR5N*
-password = "GerenciadorCheckList123"
+user = "GerenciadorCheckList"
+password = ""
 database = "LACSM"
 
 # Variavel caminho para a imagem de icone do app
