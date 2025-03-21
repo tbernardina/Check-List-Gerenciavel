@@ -131,14 +131,6 @@ def remover_tarefa_bd(id_tarefa):
     query = """UPDATE tarefas SET STATUS = "INATIVO" WHERE TAREFAS_ID = %s"""
     executar_query(query, (id_tarefa,))
 
-def marcar_tarefa_concluida(id_tarefa):
-    """
-    Marca uma tarefa como concluída no banco de dados.
-    """
-    query = "UPDATE tarefas SET STATUS = 'CONCLUÍDA' WHERE TAREFAS_ID = %s"
-    executar_query(query, (id_tarefa,))
-
-
 def atualizar_status_tarefa(id_tarefa, descricao, usuario):
     query = """
         UPDATE tarefas
