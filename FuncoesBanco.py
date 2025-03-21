@@ -135,15 +135,14 @@ def marcar_tarefa_concluida(id_tarefa):
     """
     Marca uma tarefa como concluída no banco de dados.
     """
-    query = "UPDATE tarefas SET STATUS = 'Concluída' WHERE TAREFAS_ID = %s"
+    query = "UPDATE tarefas SET STATUS = 'CONCLUÍDA' WHERE TAREFAS_ID = %s"
     executar_query(query, (id_tarefa,))
 
 
 def atualizar_status_tarefa(id_tarefa, descricao, usuario):
     query = """
         UPDATE tarefas
-        SET TAREFA_SOLUCAO = %s, DATA_CONCLUSAO = CURRENT_TIMESTAMP,
-        STATUS = "Concluída"
+        SET TAREFA_SOLUCAO = %s, DATA_CONCLUSAO = CURRENT_TIMESTAMP, STATUS = 'CONCLUÍDA'
         WHERE TAREFAS_ID = %s
     """
     adicionar_usuario_tarefa_db(id_tarefa, usuario, "SOLUÇÃO")
