@@ -27,6 +27,8 @@ import shutil
 import uuid
 from smb.SMBConnection import SMBConnection
 
+#teste para demonstração do git
+
 class App:
     def __init__(self):
         self.id_usuario = None
