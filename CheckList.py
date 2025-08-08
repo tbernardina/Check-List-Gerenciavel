@@ -567,10 +567,10 @@ class App:
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao salvar conclusão da tarefa: {e}")
     
-    def salvar_usuario(self, campo_nome, campo_senha, cargo_id, setor_id, popup):
+    def salvar_usuario(self, campo_nome, campo_senha, cargo_id, popup):
         nome = campo_nome.get().strip()
         senha = campo_senha.get().strip()
-        print(f"Nome: {nome}, Senha: {senha}, Cargo ID: {cargo_id}, Setor ID: {setor_id}")
+        print(f"Nome: {nome}, Senha: {senha}, Cargo ID: {cargo_id}")
         # Validação
         if not nome or not senha:
             messagebox.showwarning("Campos Obrigatórios", "Por favor, preencha todos os campos.")
@@ -578,7 +578,7 @@ class App:
 
         try:
             # Lógica para salvar no banco de dados
-            FB.criar_usuario(nome, senha, cargo_id, setor_id)
+            FB.criar_usuario(nome, senha, cargo_id)
             messagebox.showinfo("Sucesso", f"Usuário '{nome}' criado com sucesso!")
             popup.destroy()
         except Exception as e:
